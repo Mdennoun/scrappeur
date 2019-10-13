@@ -1,0 +1,8 @@
+= Début de la définition d’une action
+{name -> Google}                    # Correspond au nom de l'action
+{url -> www.google.fr}              # URL du site web a recuperer
++                                   # Debut de la définition des options d’une action
+{option1 -> value}                  # Premiere Option  
+{option2 -> value}                  # Seconde Option 
+==                                  # Debut de la définition de la tache 
+^D

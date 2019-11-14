@@ -432,7 +432,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 }
 
 char *CheckUrl(char *url, int size, char *domain, int domainSize) {
-
+    
     if(url[0] == '/') {
         char *checkedUrl;
         checkedUrl = malloc((size + domainSize));
@@ -443,7 +443,7 @@ char *CheckUrl(char *url, int size, char *domain, int domainSize) {
         return checkedUrl;
     }
     if(url[size - 3] == ';') {
-        printf("yes");
+        printf("yes\n");
         char *checkedUrl;
         checkedUrl = malloc((size - 2));
         memcpy( checkedUrl, &url[0], (size-2) );
@@ -460,15 +460,16 @@ void DownloadImages(char *filePath, char* domain, int domainSize) {
     FILE *fp;
     CURLcode res;
     char c;
-    char *outfilename = "/Users/mohamed.dennoun/Desktop/scrappeur/Websites/Google/saveimage.jpeg";
+    char *outpicturename;
+    char *outfilename = "/Users/mohamed.dennoun/Desktop/scrappeur/Websites/Google/saveimage";
     
     
 
     FILE* file = fopen(filePath,"r");
     if(file != NULL){
 
-        double start = 0;
-        int size;
+        long start = 0;
+        long size = 0;
         int nbUrl = 0;
 
         
@@ -484,42 +485,68 @@ void DownloadImages(char *filePath, char* domain, int domainSize) {
         }
         
         rewind(file);
+        c=' ';
+        long cursor = 0;
+        int testcur = 0;
+        for(int ligne = 0; ligne < nbUrl; ligne++) {
+        
 
+        strcpy(outpicturename,outfilename);
+        char nbrTemp[4]; // Nombre maximal de photo a rendre dynamique
+ 
+        sprintf(nbrTemp, "%d", ligne);
+        strcat(outpicturename,nbrTemp);
+        strcat(outpicturename,".jpeg");
 
-        c=fgetc(file);
-        while((c)!=EOF){
+        printf("\noutpicturename : %s\n",outpicturename);
+        printf("\nligne : %d\n",ligne);
+        cursor = ftell(file);     
+             
+        while((c)!=EOF ){
             
             if(c =='\n') {
                 size = ftell(file) - start;
-                start =ftell(file);
+                start = ftell(file) ;
+                //cursor = ftell(file);
+                c=fgetc(file);
                 break;
 
             }
+            //printf("%c",c);
             c=fgetc(file);
         }
-        printf("%d\n", size);
+        
+        
+       
+        fseek(file,cursor,SEEK_SET);
+        
+        
+
+
 
         int i = 0;
         char url [size];
         url[size] = '\0';
-        printf("%lu\n",sizeof(url));
-        rewind(file);
-        while(i < size && c !=EOF){
-            c = fgetc(file);
-            url[i] = c;
+        while(i < size ){
+            url[i] = fgetc(file);
             i += 1;
         }
-
+        
         //tester
         char *checkUrl = CheckUrl(url, size, domain, domainSize);
-
-        printf("%s\n",url);
-        printf("%s\n",checkUrl);
-        printf("%d\n", nbUrl);
+        
+        printf("\nurl %d : %s \n",ligne,url);
+        printf("checkUrl %d : %s \n",ligne,checkUrl);
 
         curl = curl_easy_init();
         if (curl) {
-        fp = fopen(outfilename,"wb");
+        char picNbr = (char) ligne;
+        char outpicname[(size+1)];
+
+        printf("size : %ld\n",size);
+        
+
+        fp = fopen(outpicturename,"wb");
         curl_easy_setopt(curl, CURLOPT_URL, checkUrl);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
@@ -533,10 +560,10 @@ void DownloadImages(char *filePath, char* domain, int domainSize) {
 
         
         
-        
+        }
 
         fclose(file);
-
+        
     } else {
 
         fprintf(stderr, "File not fond. Check your file path");
